@@ -55,20 +55,91 @@ ui <- fluidPage( # fluidPage para estructurar la página visualmente
   verbatimTextOutput("summary"), # Código
   tableOutput("table") # Tablas
 )
+#     Hasta acá se ven los inputs, osea no se ve nada casi
+
 
 
 # Defino en server lo que va a aparecer en el output
+# 
 # Programación reactiva: contarle a shiny cómo calcular algo (no
 # es decirle que lo haga, es como si fuera darle una receta a alguien)
-server <- function(input, output, session) {
-  output$summary <- renderPrint(
-    {
-      
-    }
-  )
+# server <- function(input, output, session) {
+#   # Decimos que el output va a llamarse summary y le ponemos
+#   # qué es lo que va a ser adentro de renderPrint
+#   
+#   # Hay muchos render{Type}
+#   # Le pusimos de nombre summary como el argumento del 
+#   # verbatimTextOutput
+#   output$summary <- renderPrint(
+#     {
+#       dataset <- get(input$dataset, 
+#                      "package:datasets")
+#       summary(dataset)
+#     }
+#   )
+#   
+#   # Le pusimos de nombre table como el argumento del 
+#   # tableOutput
+#   output$table <- renderTable({
+#     dataset <- get(input$dataset,
+#                    "package:datasets")
+#     dataset
+#   })
+# }
+# 
+# shinyApp(ui, server)
+
+
+# COSAS GENERALES:
+# *) CREO que dentro de render{Type} van sentencias de R que solemos
+# usar
+# *) A medida que cambiemos input$dataset etc, se va a actualizar 
+# con el valor actual (las salidas se actualizan automáticamente 
+# cuando cambian los inputs)
+
+
+
+#       AHORA REDUCIMOS LAS COSAS DUPLICADAS
+#   (usando expresiones reactivas)
+
+# Una expresión reactiva sólo ejecuta la primera vez que se llama
+# y luego almacena su resultado en caché hasta que lo necesite
+# actualizar
+
+server <- function(input, output, session){
+  # Creamos una expresión reactiva:
+  dataset <- reactive({
+    get(input$dataset,
+        "package:datasets")
+  })
+  
+  output$summary <- renderPrint({
+    
+    # CREO que pone dataset() con los paréntesis para que sea 
+    # reactivo
+    summary(dataset())
+  })
+  
+  output$table <- renderTable({
+    # De nuevo con los paréntesis, creo que eso hace que sea 
+    # reactivo
+    dataset()
+  })
 }
 
 shinyApp(ui, server)
+
+
+# CHEATSHEET SHINY SIMPLE: 
+# https://rstudio.github.io/cheatsheets/shiny.pdf
+
+
+
+
+
+
+# VER EJERCICIOS
+
 
 
 
